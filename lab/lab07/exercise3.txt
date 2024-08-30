@@ -1,20 +1,20 @@
 --- not autograded ---
 
 Part 1
-    blocksize = 20, n = 100: 
-    blocksize = 20, n = 1000: 
-    blocksize = 20, n = 2000: 
-    blocksize = 20, n = 5000: 
-    blocksize = 20, n = 10000: 
+    blocksize = 20, n = 100: 0.002, 0.005
+    blocksize = 20, n = 1000: 0.968, 1.234
+    blocksize = 20, n = 2000: 3.954, 5.177
+    blocksize = 20, n = 5000: 71.205, 36.689
+    blocksize = 20, n = 10000: 387.171 144.01
 
-    Checkoff Question 1:
-    Checkoff Question 2:
+    Checkoff Question 1: n > 5000
+    Checkoff Question 2: When the matrix is small, the whole matrix is among of cache, the naive version has the same access speed as the blocking one. However, the blocking one need to do more work to separate matrix, so it's slower than the naive one.
 
 Part 2
-    blocksize = 50, n = 10000:
-    blocksize = 100, n = 10000:
-    blocksize = 500, n = 10000:
-    blocksize = 1000, n = 10000:
-    blocksize = 5000, n = 10000:
+    blocksize = 50, n = 10000: 370.797, 104.947
+    blocksize = 100, n = 10000: 398.577, 96.834
+    blocksize = 500, n = 10000: 385.514, 71.143
+    blocksize = 1000, n = 10000: 389.769, 105.582
+    blocksize = 5000, n = 10000: 374.935, 317.515
 
-    Checkoff Question 3:
+    Checkoff Question 3: Become high then go low. When the blocksize goes high, it can use more cache space. However, when the blocksize goes to high, blocksize is bigger than cache size, so the performance won't become significantly fast.

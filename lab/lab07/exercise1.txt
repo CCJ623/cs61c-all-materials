@@ -1,24 +1,25 @@
 Scenario 1
-    1.
-    2.
-    3.
+    1.Step Size, Block Size
+    2.0
+    3.Step Size, 1
 
 Scenario 2
-    1.
-    2.
-    3.
+    1.64
+    2.MHHH
+    3.1
 
 Scenario 3
-    1.
-    2.
-    3.
-    4.
-    5.
+    1.0.5, 0, 0.333
+    2.16, 16
+    3.16
+    4.Rep Count
+    5.=,=,+,=
 
 --- lines below are ignored by the AG ---
 
-Checkoff Question 1:
-Checkoff Question 2:
-Checkoff Question 3:
-Checkoff Question 4:
-Checkoff Question 5:
+Checkoff Question 1: Because Step Size in byte is equal to Block Size in bytes, no matter how many times it repeats.
+Checkoff Question 2: Array Size, Step Size
+Checkoff Question 3: First M because the cache is cold. Second H is a write to the set we've just read in. Third and Forth H is read and write the 3rd way in the same set.
+Checkoff Question 4: Becase Block Size is equal to Array Size, after a full inner loop, the whole array will be fill in the cache, the access after that always hit.
+Checkoff Question 5: We could access a Block Size of the array at a time, apply all function to every elements sits in this area, then we move on in a Step Size which is equal to Block Size.
+Checkoff Question 6: Cache Size of level 2 is equal to Array Size in bytes, we alwasy hit level 2 cache after one inner loop.

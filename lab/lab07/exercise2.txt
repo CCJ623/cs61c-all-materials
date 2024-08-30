@@ -1,8 +1,8 @@
-1.
-2.
+1.jki, kji
+2.ikj, kij
 
 --- lines below are ignored by the AG ---
 
-Checkoff Question 1:
-Checkoff Question 2:
-Checkoff Question 3:
+Checkoff Question 1:Because in the innermost loop, j and k will multiply with n, the less j and k be changed, the less address will bias, the more chance to hit cache.
+Checkoff Question 2:Same as question 1.
+Checkoff Question 3:By biasing the address.
