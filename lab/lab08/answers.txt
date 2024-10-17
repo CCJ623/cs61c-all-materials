@@ -1,19 +1,19 @@
 Exercise 1:
-    1.
-    2.
-    3.
+    1.32
+    2.2,8,0,8
+    3.no,no
 
 Exercise 2:
-    1.
+    1.01,21,41,61,81,A1,C1,E1,01,21
 
 Exercise 3:
-    1.
+    1.Physical Memory Size
 
 --- lines below are ignored by the AG ---
 
 Exercise 1 Checkoff Questions:
-    1.
-    2.
+    1.The virtual address will be separated into two parts, 3 bits for page num, 5 bits for offset. Then we will look the page num up in TLB, there must be a TLB miss becase TLB must be empty at the very beginning of the process. After a TLB miss, we will look it up in Page Table, there must be a page fault because Page Table must be filled with invalid bit at the very beginning of the process. Then we will load the data into the empty space which is frame 0 in the physical memory. Once we replace the page num in virtual address with frame num, the address is physical address, because the offset between virtual address and physical address are the same.
+    2.Because the virtual memory space is bigger than physical memory space.
 
 Exercise 4 Checkoff Question:
     1.
