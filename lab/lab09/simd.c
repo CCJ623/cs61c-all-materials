@@ -53,8 +53,22 @@ long long int sum_simd(int vals[NUM_ELEMS]) {
 	
 	for(unsigned int w = 0; w < OUTER_ITERATIONS; w++) {
 		/* YOUR CODE GOES HERE */
-
+		__m128i sum = _mm_setzero_si128();
+		unsigned int i;
+		for (i = 0; i != NUM_ELEMS / 4 * 4; i += 4)
+		{
+			__m128i temp = _mm_loadu_si128(&vals[i]);
+			__m128i select = _mm_cmpgt_epi32(temp, _127);
+			temp = _mm_and_si128(temp, select);
+			sum = _mm_add_epi32(sum, temp);
+		}
+		int sum_array[4];
+		_mm_storeu_si128(sum_array, sum);
+		for (unsigned int index = 0; index != 4; ++index)
+			result += sum_array[index];
 		/* You'll need a tail case. */
+		for (; i != NUM_ELEMS; ++i)
+			result += vals[i];
 
 	}
 	clock_t end = clock();
@@ -69,9 +83,45 @@ long long int sum_simd_unrolled(int vals[NUM_ELEMS]) {
 	for(unsigned int w = 0; w < OUTER_ITERATIONS; w++) {
 		/* COPY AND PASTE YOUR sum_simd() HERE */
 		/* MODIFY IT BY UNROLLING IT */
+		__m128i sum = _mm_setzero_si128();
+		unsigned int i;
+		for (i = 0; i != NUM_ELEMS / 16 * 16; i += 16)
+		{
+			__m128i temp = _mm_loadu_si128(&vals[i]);
+			__m128i select = _mm_cmpgt_epi32(temp, _127);
+			temp = _mm_and_si128(temp, select);
+			sum = _mm_add_epi32(sum, temp);
 
+			temp = _mm_loadu_si128(&vals[i + 4]);
+			select = _mm_cmpgt_epi32(temp, _127);
+			temp = _mm_and_si128(temp, select);
+			sum = _mm_add_epi32(sum, temp);
+
+			temp = _mm_loadu_si128(&vals[i + 8]);
+			select = _mm_cmpgt_epi32(temp, _127);
+			temp = _mm_and_si128(temp, select);
+			sum = _mm_add_epi32(sum, temp);
+
+			temp = _mm_loadu_si128(&vals[i + 12]);
+			select = _mm_cmpgt_epi32(temp, _127);
+			temp = _mm_and_si128(temp, select);
+			sum = _mm_add_epi32(sum, temp);
+		}
+		int sum_array[4];
 		/* You'll need 1 or maybe 2 tail cases here. */
-
+		for (; i != NUM_ELEMS / 4 * 4; i += 4)
+		{
+			__m128i temp = _mm_loadu_si128(&vals[i]);
+			__m128i select = _mm_cmpgt_epi32(temp, _127);
+			temp = _mm_and_si128(temp, select);
+			sum = _mm_add_epi32(sum, temp);
+		}
+		_mm_storeu_si128(sum_array, sum);
+		for (unsigned int index = 0; index != 4; ++index)
+			result += sum_array[index];
+		/* You'll need a tail case. */
+		for (; i != NUM_ELEMS; ++i)
+			result += vals[i];
 	}
 	clock_t end = clock();
 	printf("Time taken: %Lf s\n", (long double)(end - start) / CLOCKS_PER_SEC);
