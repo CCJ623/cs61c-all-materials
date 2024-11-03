@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "server_utils.h": "c",
+        "libhttp.h": "c"
+    }
+}
