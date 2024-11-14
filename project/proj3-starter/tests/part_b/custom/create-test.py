@@ -12,7 +12,7 @@ VENUS_TRACE_PATTERN = "%1%\t%2%\t%5%\t%6%\t%7%\t%8%\t%9%\t%10%\t%pc%\t%inst%\t%l
 
 script_dir = os.path.realpath(sys.path[0])
 logisim_path = os.path.join(script_dir, "../../../logisim-evolution.jar")
-venus_path = os.path.join(script_dir, "../../../venus-cs61c-sp20.jar")
+venus_path = os.path.join(script_dir, "../../../venus-cs61c-fa20-proj3.jar")
 
 def main(asm_file_paths, num_cycles):
   error_log_path = os.path.join(script_dir, "error.log")
@@ -31,7 +31,7 @@ def main(asm_file_paths, num_cycles):
     asm_file_path = os.path.join(os.getcwd(), asm_file_path)
     hex_data_path = os.path.join(script_dir, "inputs/%s.hex" % input_slug)
     reference_output_path = os.path.join(script_dir, "reference_output/%s-ref.out" % test_slug)
-    run_circ_path = os.path.join(script_dir, "../../../run.circ")
+    run_circ_path = os.path.join(script_dir, "../../../harnesses/run.circ")
     test_circ_path = os.path.join(script_dir, "%s.circ" % test_slug)
 
     print("Generating test for %s..." % test_slug)
@@ -119,10 +119,10 @@ def main(asm_file_paths, num_cycles):
       ROM[2].text = "addr/data: 14 32\n" + rom_instructions
 
       constant = circuit.find("./comp/[@name='Constant']")
-      constant[1].attrib["val"] = hex(test_num_cycles)
+      constant[0].attrib["val"] = hex(test_num_cycles)
 
-      cpu_lib = root.find("./lib/[@desc='file#cpu.circ']")
-      cpu_lib.attrib["desc"] = "file#../../../cpu.circ"
+      test_harness_lib = root.find("./lib/[@desc='file#test_harness.circ']")
+      test_harness_lib.attrib["desc"] = "file#../../../harnesses/test_harness.circ"
 
       tree.write(test_circ_path)
     except Exception as e:
