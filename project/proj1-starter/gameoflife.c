@@ -40,38 +40,21 @@ Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 	}
 	Color* result = malloc(sizeof(Color));
 	result->R = result->G = result->B = 0;
-	// R
 	for (size_t index = 7; index < 8; --index)
 	{
 		result->R <<= 1;
-		size_t live_cnt = 0;
-		for (size_t i = 0; i != neighbor_cnt; ++i)
-		{
-			live_cnt += (neighbors[i]->R >> index) & 1;
-		}
-		result->R += (rule >> (((image->image[row][col].R >> index) & 1) * 9 + live_cnt)) & 1;
-	}
-	// G
-	for (size_t index = 7; index < 8; --index)
-	{
 		result->G <<= 1;
-		size_t live_cnt = 0;
-		for (size_t i = 0; i != neighbor_cnt; ++i)
-		{
-			live_cnt += (neighbors[i]->G >> index) & 1;
-		}
-		result->G += (rule >> (((image->image[row][col].G >> index) & 1) * 9 + live_cnt)) & 1;
-	}
-	// B
-	for (size_t index = 7; index < 8; --index)
-	{
 		result->B <<= 1;
-		size_t live_cnt = 0;
+		size_t live_cnt_R = 0, live_cnt_G = 0, live_cnt_B = 0;
 		for (size_t i = 0; i != neighbor_cnt; ++i)
 		{
-			live_cnt += (neighbors[i]->B >> index) & 1;
+			live_cnt_R += (neighbors[i]->R >> index) & 1;
+			live_cnt_G += (neighbors[i]->G >> index) & 1;
+			live_cnt_B += (neighbors[i]->B >> index) & 1;
 		}
-		result->B += (rule >> (((image->image[row][col].B >> index) & 1) * 9 + live_cnt)) & 1;
+		result->R += (rule >> (((image->image[row][col].R >> index) & 1) * 9 + live_cnt_R)) & 1;
+		result->G += (rule >> (((image->image[row][col].G >> index) & 1) * 9 + live_cnt_G)) & 1;
+		result->B += (rule >> (((image->image[row][col].B >> index) & 1) * 9 + live_cnt_B)) & 1;
 	}
 	return result;
 }
