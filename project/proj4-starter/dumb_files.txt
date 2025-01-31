@@ -1,0 +1,2 @@
+/mnt/d/college/CS61C/project/proj4-starter/.venv/lib/python3.10/site-packages/dumbpy.cpython-310-x86_64-linux-gnu.so
+/mnt/d/college/CS61C/project/proj4-starter/.venv/lib/python3.10/site-packages/dumpy-0.0.0.egg-info

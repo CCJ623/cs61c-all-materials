@@ -1,4 +1,4 @@
-#include "matrix.h"
+#include "dumb_matrix.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +29,8 @@
 /*
  * Generates a random double between `low` and `high`.
  */
-double rand_double(double low, double high) {
+double rand_double(double low, double high)
+{
     double range = (high - low);
     double div = RAND_MAX / range;
     return low + (rand() / div);
@@ -38,10 +39,13 @@ double rand_double(double low, double high) {
 /*
  * Generates a random matrix with `seed`.
  */
-void rand_matrix(matrix *result, unsigned int seed, double low, double high) {
+void rand_matrix(matrix* result, unsigned int seed, double low, double high)
+{
     srand(seed);
-    for (int i = 0; i < result->rows; i++) {
-        for (int j = 0; j < result->cols; j++) {
+    for (int i = 0; i < result->rows; i++)
+    {
+        for (int j = 0; j < result->cols; j++)
+        {
             set(result, i, j, rand_double(low, high));
         }
     }
@@ -57,7 +61,8 @@ void rand_matrix(matrix *result, unsigned int seed, double low, double high) {
  * failure, then remember to set it in numc.c.
  * Return 0 upon success and non-zero upon failure.
  */
-int allocate_matrix(matrix **mat, int rows, int cols) {
+int allocate_matrix(matrix** mat, int rows, int cols)
+{
     /* TODO: YOUR CODE HERE */
     if (mat == NULL)
         return -1;
@@ -95,8 +100,9 @@ int allocate_matrix(matrix **mat, int rows, int cols) {
  * If you don't set python error messages here upon failure, then remember to set it in numc.c.
  * Return 0 upon success and non-zero upon failure.
  */
-int allocate_matrix_ref(matrix **mat, matrix *from, int row_offset, int col_offset,
-                        int rows, int cols) {
+int allocate_matrix_ref(matrix** mat, matrix* from, int row_offset, int col_offset,
+    int rows, int cols)
+{
     /* TODO: YOUR CODE HERE */
     if (mat == NULL || from == NULL)
         return -1;
@@ -134,7 +140,8 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int row_offset, int col_offs
  * referring this data array.
  * See the spec for more information.
  */
-void deallocate_matrix(matrix *mat) {
+void deallocate_matrix(matrix* mat)
+{
     /* TODO: YOUR CODE HERE */
     if (mat == NULL)
         return;
@@ -160,7 +167,8 @@ void deallocate_matrix(matrix *mat) {
  * Return the double value of the matrix at the given row and column.
  * You may assume `row` and `col` are valid.
  */
-double get(matrix *mat, int row, int col) {
+double get(matrix* mat, int row, int col)
+{
     /* TODO: YOUR CODE HERE */
     return mat->data[row][col];
 }
@@ -169,7 +177,8 @@ double get(matrix *mat, int row, int col) {
  * Set the value at the given row and column to val. You may assume `row` and
  * `col` are valid
  */
-void set(matrix *mat, int row, int col, double val) {
+void set(matrix* mat, int row, int col, double val)
+{
     /* TODO: YOUR CODE HERE */
     if (mat == NULL)
         return;
@@ -179,7 +188,8 @@ void set(matrix *mat, int row, int col, double val) {
 /*
  * Set all entries in mat to val
  */
-void fill_matrix(matrix *mat, double val) {
+void fill_matrix(matrix* mat, double val)
+{
     /* TODO: YOUR CODE HERE */
     if (mat == NULL)
         return;
@@ -196,7 +206,8 @@ void fill_matrix(matrix *mat, double val) {
  * Store the result of adding mat1 and mat2 to `result`.
  * Return 0 upon success and a nonzero value upon failure.
  */
-int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
+int add_matrix(matrix* result, matrix* mat1, matrix* mat2)
+{
     /* TODO: YOUR CODE HERE */
     if (result == NULL || mat1 == NULL || mat2 == NULL)
     {
@@ -221,7 +232,8 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  * Store the result of subtracting mat2 from mat1 to `result`.
  * Return 0 upon success and a nonzero value upon failure.
  */
-int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
+int sub_matrix(matrix* result, matrix* mat1, matrix* mat2)
+{
     /* TODO: YOUR CODE HERE */
     if (result->rows != mat1->rows || mat1->rows != mat2->rows
         || result->cols != mat1->cols || mat1->cols != mat2->cols)
@@ -243,7 +255,8 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  * Return 0 upon success and a nonzero value upon failure.
  * Remember that matrix multiplication is not the same as multiplying individual elements.
  */
-int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
+int mul_matrix(matrix* result, matrix* mat1, matrix* mat2)
+{
     /* TODO: YOUR CODE HERE */
     if (mat1->cols != mat2->rows || result->rows != mat1->rows || result->cols != mat2->cols)
         return -1;
@@ -267,7 +280,8 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  * Return 0 upon success and a nonzero value upon failure.
  * Remember that pow is defined with matrix multiplication, not element-wise multiplication.
  */
-int pow_matrix(matrix *result, matrix *mat, int pow) {
+int pow_matrix(matrix* result, matrix* mat, int pow)
+{
     /* TODO: YOUR CODE HERE */
     if (mat->rows != mat->cols || pow < 0)
         return -1;
@@ -297,7 +311,8 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
  * Store the result of element-wise negating mat's entries to `result`.
  * Return 0 upon success and a nonzero value upon failure.
  */
-int neg_matrix(matrix *result, matrix *mat) {
+int neg_matrix(matrix* result, matrix* mat)
+{
     /* TODO: YOUR CODE HERE */
     if (result->rows != mat->rows || result->cols != mat->cols)
         return -1;
@@ -313,7 +328,8 @@ int neg_matrix(matrix *result, matrix *mat) {
  * Store the result of taking the absolute value element-wise to `result`.
  * Return 0 upon success and a nonzero value upon failure.
  */
-int abs_matrix(matrix *result, matrix *mat) {
+int abs_matrix(matrix* result, matrix* mat)
+{
     /* TODO: YOUR CODE HERE */
     if (result->rows != mat->rows || result->cols != mat->cols)
         return -1;

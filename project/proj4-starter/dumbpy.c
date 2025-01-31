@@ -1,4 +1,4 @@
-#include "numc.h"
+#include "dumbpy.h"
 #include <structmember.h>
 
 PyTypeObject Matrix61cType;
@@ -8,39 +8,46 @@ PyTypeObject Matrix61cType;
 /*
  * Return a tuple given rows and cols
  */
-PyObject *get_shape(int rows, int cols) {
-  if (rows == 1 || cols == 1) {
-    return PyTuple_Pack(1, PyLong_FromLong(rows * cols));
-  } else {
-    return PyTuple_Pack(2, PyLong_FromLong(rows), PyLong_FromLong(cols));
-  }
+PyObject* get_shape(int rows, int cols)
+{
+    if (rows == 1 || cols == 1)
+    {
+        return PyTuple_Pack(1, PyLong_FromLong(rows * cols));
+    }
+    else
+    {
+        return PyTuple_Pack(2, PyLong_FromLong(rows), PyLong_FromLong(cols));
+    }
 }
 /*
  * Matrix(rows, cols, low, high). Fill a matrix random double values
  */
-int init_rand(PyObject *self, int rows, int cols, unsigned int seed, double low,
-              double high) {
-    matrix *new_mat;
+int init_rand(PyObject* self, int rows, int cols, unsigned int seed, double low,
+    double high)
+{
+    matrix* new_mat;
     int alloc_failed = allocate_matrix(&new_mat, rows, cols);
     if (alloc_failed) return alloc_failed;
     rand_matrix(new_mat, seed, low, high);
-    ((Matrix61c *)self)->mat = new_mat;
-    ((Matrix61c *)self)->shape = get_shape(new_mat->rows, new_mat->cols);
+    ((Matrix61c*)self)->mat = new_mat;
+    ((Matrix61c*)self)->shape = get_shape(new_mat->rows, new_mat->cols);
     return 0;
 }
 
 /*
  * Matrix(rows, cols, val). Fill a matrix of dimension rows * cols with val
  */
-int init_fill(PyObject *self, int rows, int cols, double val) {
-    matrix *new_mat;
+int init_fill(PyObject* self, int rows, int cols, double val)
+{
+    matrix* new_mat;
     int alloc_failed = allocate_matrix(&new_mat, rows, cols);
     if (alloc_failed)
         return alloc_failed;
-    else {
+    else
+    {
         fill_matrix(new_mat, val);
-        ((Matrix61c *)self)->mat = new_mat;
-        ((Matrix61c *)self)->shape = get_shape(new_mat->rows, new_mat->cols);
+        ((Matrix61c*)self)->mat = new_mat;
+        ((Matrix61c*)self)->shape = get_shape(new_mat->rows, new_mat->cols);
     }
     return 0;
 }
@@ -48,172 +55,221 @@ int init_fill(PyObject *self, int rows, int cols, double val) {
 /*
  * Matrix(rows, cols, 1d_list). Fill a matrix with dimension rows * cols with 1d_list values
  */
-int init_1d(PyObject *self, int rows, int cols, PyObject *lst) {
-    if (rows * cols != PyList_Size(lst)) {
+int init_1d(PyObject* self, int rows, int cols, PyObject* lst)
+{
+    if (rows * cols != PyList_Size(lst))
+    {
         PyErr_SetString(PyExc_ValueError, "Incorrect number of elements in list");
         return -1;
     }
-    matrix *new_mat;
+    matrix* new_mat;
     int alloc_failed = allocate_matrix(&new_mat, rows, cols);
     if (alloc_failed) return alloc_failed;
     int count = 0;
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
             set(new_mat, i, j, PyFloat_AsDouble(PyList_GetItem(lst, count)));
             count++;
         }
     }
-    ((Matrix61c *)self)->mat = new_mat;
-    ((Matrix61c *)self)->shape = get_shape(new_mat->rows, new_mat->cols);
+    ((Matrix61c*)self)->mat = new_mat;
+    ((Matrix61c*)self)->shape = get_shape(new_mat->rows, new_mat->cols);
     return 0;
 }
 
 /*
  * Matrix(2d_list). Fill a matrix with dimension len(2d_list) * len(2d_list[0])
  */
-int init_2d(PyObject *self, PyObject *lst) {
+int init_2d(PyObject* self, PyObject* lst)
+{
     int rows = PyList_Size(lst);
-    if (rows == 0) {
+    if (rows == 0)
+    {
         PyErr_SetString(PyExc_ValueError,
-                        "Cannot initialize numc.Matrix with an empty list");
+            "Cannot initialize dumbpy.Matrix with an empty list");
         return -1;
     }
     int cols;
-    if (!PyList_Check(PyList_GetItem(lst, 0))) {
+    if (!PyList_Check(PyList_GetItem(lst, 0)))
+    {
         PyErr_SetString(PyExc_ValueError, "List values not valid");
         return -1;
-    } else {
+    }
+    else
+    {
         cols = PyList_Size(PyList_GetItem(lst, 0));
     }
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < rows; i++)
+    {
         if (!PyList_Check(PyList_GetItem(lst, i)) ||
-                PyList_Size(PyList_GetItem(lst, i)) != cols) {
+            PyList_Size(PyList_GetItem(lst, i)) != cols)
+        {
             PyErr_SetString(PyExc_ValueError, "List values not valid");
             return -1;
         }
     }
-    matrix *new_mat;
+    matrix* new_mat;
     int alloc_failed = allocate_matrix(&new_mat, rows, cols);
     if (alloc_failed) return alloc_failed;
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
             set(new_mat, i, j,
                 PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(lst, i), j)));
         }
     }
-    ((Matrix61c *)self)->mat = new_mat;
-    ((Matrix61c *)self)->shape = get_shape(new_mat->rows, new_mat->cols);
+    ((Matrix61c*)self)->mat = new_mat;
+    ((Matrix61c*)self)->shape = get_shape(new_mat->rows, new_mat->cols);
     return 0;
 }
 
 /*
  * This deallocation function is called when reference count is 0
  */
-void Matrix61c_dealloc(Matrix61c *self) {
+void Matrix61c_dealloc(Matrix61c* self)
+{
     deallocate_matrix(self->mat);
     Py_TYPE(self)->tp_free(self);
 }
 
 /* For immutable types all initializations should take place in tp_new */
-PyObject *Matrix61c_new(PyTypeObject *type, PyObject *args,
-                        PyObject *kwds) {
+PyObject* Matrix61c_new(PyTypeObject* type, PyObject* args,
+    PyObject* kwds)
+{
     /* size of allocated memory is tp_basicsize + nitems*tp_itemsize*/
-    Matrix61c *self = (Matrix61c *)type->tp_alloc(type, 0);
-    return (PyObject *)self;
+    Matrix61c* self = (Matrix61c*)type->tp_alloc(type, 0);
+    return (PyObject*)self;
 }
 
 /*
  * This matrix61c type is mutable, so needs init function. Return 0 on success otherwise -1
  */
-int Matrix61c_init(PyObject *self, PyObject *args, PyObject *kwds) {
+int Matrix61c_init(PyObject* self, PyObject* args, PyObject* kwds)
+{
     /* Generate random matrices */
-    if (kwds != NULL) {
-        PyObject *rand = PyDict_GetItemString(kwds, "rand");
-        if (!rand) {
+    if (kwds != NULL)
+    {
+        PyObject* rand = PyDict_GetItemString(kwds, "rand");
+        if (!rand)
+        {
             PyErr_SetString(PyExc_TypeError, "Invalid arguments");
             return -1;
         }
-        if (!PyBool_Check(rand)) {
+        if (!PyBool_Check(rand))
+        {
             PyErr_SetString(PyExc_TypeError, "Invalid arguments");
             return -1;
         }
-        if (rand != Py_True) {
+        if (rand != Py_True)
+        {
             PyErr_SetString(PyExc_TypeError, "Invalid arguments");
             return -1;
         }
 
-        PyObject *low = PyDict_GetItemString(kwds, "low");
-        PyObject *high = PyDict_GetItemString(kwds, "high");
-        PyObject *seed = PyDict_GetItemString(kwds, "seed");
+        PyObject* low = PyDict_GetItemString(kwds, "low");
+        PyObject* high = PyDict_GetItemString(kwds, "high");
+        PyObject* seed = PyDict_GetItemString(kwds, "seed");
         double double_low = 0;
         double double_high = 1;
         unsigned int unsigned_seed = 0;
 
-        if (low) {
-            if (PyFloat_Check(low)) {
+        if (low)
+        {
+            if (PyFloat_Check(low))
+            {
                 double_low = PyFloat_AsDouble(low);
-            } else if (PyLong_Check(low)) {
+            }
+            else if (PyLong_Check(low))
+            {
                 double_low = PyLong_AsLong(low);
             }
         }
 
-        if (high) {
-            if (PyFloat_Check(high)) {
+        if (high)
+        {
+            if (PyFloat_Check(high))
+            {
                 double_high = PyFloat_AsDouble(high);
-            } else if (PyLong_Check(high)) {
+            }
+            else if (PyLong_Check(high))
+            {
                 double_high = PyLong_AsLong(high);
             }
         }
 
-        if (double_low >= double_high) {
+        if (double_low >= double_high)
+        {
             PyErr_SetString(PyExc_TypeError, "Invalid arguments");
             return -1;
         }
 
         // Set seed if argument exists
-        if (seed) {
-            if (PyLong_Check(seed)) {
+        if (seed)
+        {
+            if (PyLong_Check(seed))
+            {
                 unsigned_seed = PyLong_AsUnsignedLong(seed);
             }
         }
 
-        PyObject *rows = NULL;
-        PyObject *cols = NULL;
-        if (PyArg_UnpackTuple(args, "args", 2, 2, &rows, &cols)) {
-            if (rows && cols && PyLong_Check(rows) && PyLong_Check(cols)) {
+        PyObject* rows = NULL;
+        PyObject* cols = NULL;
+        if (PyArg_UnpackTuple(args, "args", 2, 2, &rows, &cols))
+        {
+            if (rows && cols && PyLong_Check(rows) && PyLong_Check(cols))
+            {
                 return init_rand(self, PyLong_AsLong(rows), PyLong_AsLong(cols), unsigned_seed, double_low,
-                                 double_high);
+                    double_high);
             }
-        } else {
+        }
+        else
+        {
             PyErr_SetString(PyExc_TypeError, "Invalid arguments");
             return -1;
         }
     }
-    PyObject *arg1 = NULL;
-    PyObject *arg2 = NULL;
-    PyObject *arg3 = NULL;
-    if (PyArg_UnpackTuple(args, "args", 1, 3, &arg1, &arg2, &arg3)) {
+    PyObject* arg1 = NULL;
+    PyObject* arg2 = NULL;
+    PyObject* arg3 = NULL;
+    if (PyArg_UnpackTuple(args, "args", 1, 3, &arg1, &arg2, &arg3))
+    {
         /* arguments are (rows, cols, val) */
         if (arg1 && arg2 && arg3 && PyLong_Check(arg1) && PyLong_Check(arg2) && (PyLong_Check(arg3)
-                || PyFloat_Check(arg3))) {
-            if (PyLong_Check(arg3)) {
+            || PyFloat_Check(arg3)))
+        {
+            if (PyLong_Check(arg3))
+            {
                 return init_fill(self, PyLong_AsLong(arg1), PyLong_AsLong(arg2), PyLong_AsLong(arg3));
-            } else
+            }
+            else
                 return init_fill(self, PyLong_AsLong(arg1), PyLong_AsLong(arg2), PyFloat_AsDouble(arg3));
-        } else if (arg1 && arg2 && arg3 && PyLong_Check(arg1) && PyLong_Check(arg2) && PyList_Check(arg3)) {
+        }
+        else if (arg1 && arg2 && arg3 && PyLong_Check(arg1) && PyLong_Check(arg2) && PyList_Check(arg3))
+        {
             /* Matrix(rows, cols, 1D list) */
             return init_1d(self, PyLong_AsLong(arg1), PyLong_AsLong(arg2), arg3);
-        } else if (arg1 && PyList_Check(arg1) && arg2 == NULL && arg3 == NULL) {
+        }
+        else if (arg1 && PyList_Check(arg1) && arg2 == NULL && arg3 == NULL)
+        {
             /* Matrix(rows, cols, 1D list) */
             return init_2d(self, arg1);
-        } else if (arg1 && arg2 && PyLong_Check(arg1) && PyLong_Check(arg2) && arg3 == NULL) {
+        }
+        else if (arg1 && arg2 && PyLong_Check(arg1) && PyLong_Check(arg2) && arg3 == NULL)
+        {
             /* Matrix(rows, cols, 1D list) */
             return init_fill(self, PyLong_AsLong(arg1), PyLong_AsLong(arg2), 0);
-        } else {
+        }
+        else
+        {
             PyErr_SetString(PyExc_TypeError, "Invalid arguments");
             return -1;
         }
-    } else {
+    }
+    else
+    {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments");
         return -1;
     }
@@ -222,25 +278,33 @@ int Matrix61c_init(PyObject *self, PyObject *args, PyObject *kwds) {
 /*
  * List of lists representations for matrices
  */
-PyObject *Matrix61c_to_list(Matrix61c *self) {
+PyObject* Matrix61c_to_list(Matrix61c* self)
+{
     int rows = self->mat->rows;
     int cols = self->mat->cols;
-    PyObject *py_lst = NULL;
-    if (self->mat->is_1d) {  // If 1D matrix, print as a single list
+    PyObject* py_lst = NULL;
+    if (self->mat->is_1d)
+    {  // If 1D matrix, print as a single list
         py_lst = PyList_New(rows * cols);
         int count = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
                 PyList_SetItem(py_lst, count, PyFloat_FromDouble(get(self->mat, i, j)));
                 count++;
             }
         }
-    } else {  // if 2D, print as nested list
+    }
+    else
+    {  // if 2D, print as nested list
         py_lst = PyList_New(rows);
-        for (int i = 0; i < rows; i++) {
+        for (int i = 0; i < rows; i++)
+        {
             PyList_SetItem(py_lst, i, PyList_New(cols));
-            PyObject *curr_row = PyList_GetItem(py_lst, i);
-            for (int j = 0; j < cols; j++) {
+            PyObject* curr_row = PyList_GetItem(py_lst, i);
+            for (int j = 0; j < cols; j++)
+            {
                 PyList_SetItem(curr_row, j, PyFloat_FromDouble(get(self->mat, i, j)));
             }
         }
@@ -248,16 +312,21 @@ PyObject *Matrix61c_to_list(Matrix61c *self) {
     return py_lst;
 }
 
-PyObject *Matrix61c_class_to_list(Matrix61c *self, PyObject *args) {
-    PyObject *mat = NULL;
-    if (PyArg_UnpackTuple(args, "args", 1, 1, &mat)) {
-        if (!PyObject_TypeCheck(mat, &Matrix61cType)) {
-            PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
+PyObject* Matrix61c_class_to_list(Matrix61c* self, PyObject* args)
+{
+    PyObject* mat = NULL;
+    if (PyArg_UnpackTuple(args, "args", 1, 1, &mat))
+    {
+        if (!PyObject_TypeCheck(mat, &Matrix61cType))
+        {
+            PyErr_SetString(PyExc_TypeError, "Argument must of type dumbpy.Matrix!");
             return NULL;
         }
         Matrix61c* mat61c = (Matrix61c*)mat;
         return Matrix61c_to_list(mat61c);
-    } else {
+    }
+    else
+    {
         PyErr_SetString(PyExc_TypeError, "Invalid arguments");
         return NULL;
     }
@@ -267,25 +336,27 @@ PyObject *Matrix61c_class_to_list(Matrix61c *self, PyObject *args) {
  * Add class methods
  */
 PyMethodDef Matrix61c_class_methods[] = {
-    {"to_list", (PyCFunction)Matrix61c_class_to_list, METH_VARARGS, "Returns a list representation of numc.Matrix"},
+    {"to_list", (PyCFunction)Matrix61c_class_to_list, METH_VARARGS, "Returns a list representation of dumbpy.Matrix"},
     {NULL, NULL, 0, NULL}
 };
 
 /*
  * Matrix61c string representation. For printing purposes.
  */
-PyObject *Matrix61c_repr(PyObject *self) {
-    PyObject *py_lst = Matrix61c_to_list((Matrix61c *)self);
+PyObject* Matrix61c_repr(PyObject* self)
+{
+    PyObject* py_lst = Matrix61c_to_list((Matrix61c*)self);
     return PyObject_Repr(py_lst);
 }
 
 /* NUMBER METHODS */
 
 /*
- * Add the second numc.Matrix (Matrix61c) object to the first one. The first operand is
+ * Add the second dumbpy.Matrix (Matrix61c) object to the first one. The first operand is
  * self, and the second operand can be obtained by casting `args`.
  */
-PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
+PyObject* Matrix61c_add(Matrix61c* self, PyObject* args)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL || args == NULL)
     {
@@ -294,39 +365,40 @@ PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
     }
     if (!PyObject_TypeCheck(args, &Matrix61cType))
     {
-        PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
+        PyErr_SetString(PyExc_TypeError, "Argument must of type dumbpy.Matrix!");
         return NULL;
     }
     Matrix61c* another = (Matrix61c*)args;
     if (self->mat->rows != another->mat->rows || self->mat->cols != another->mat->cols)
     {
-        PyErr_SetString(PyExc_ValueError, "Two numc.Matrix must have same dimensions!");
+        PyErr_SetString(PyExc_ValueError, "Two dumbpy.Matrix must have same dimensions!");
         return NULL;
     }
     Matrix61c* result = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
     if (result == NULL)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     if (init_fill((PyObject*)result, self->mat->rows, self->mat->cols, 0) != 0)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     if (add_matrix(result->mat, self->mat, another->mat) != 0)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Two numc.Matrix must have same dimensions!");
+        PyErr_SetString(PyExc_RuntimeError, "Two dumbpy.Matrix must have same dimensions!");
         return NULL;
     }
     return (PyObject*)result;
 }
 
 /*
- * Substract the second numc.Matrix (Matrix61c) object from the first one. The first operand is
+ * Substract the second dumbpy.Matrix (Matrix61c) object from the first one. The first operand is
  * self, and the second operand can be obtained by casting `args`.
  */
-PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
+PyObject* Matrix61c_sub(Matrix61c* self, PyObject* args)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL || args == NULL)
     {
@@ -335,7 +407,7 @@ PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
     }
     if (!PyObject_TypeCheck(args, &Matrix61cType))
     {
-        PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
+        PyErr_SetString(PyExc_TypeError, "Argument must of type dumbpy.Matrix!");
         return NULL;
     }
     Matrix61c* another = (Matrix61c*)args;
@@ -346,7 +418,8 @@ PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
  * NOT element-wise multiplication. The first operand is self, and the second operand
  * can be obtained by casting `args`.
  */
-PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
+PyObject* Matrix61c_multiply(Matrix61c* self, PyObject* args)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL || args == NULL)
     {
@@ -355,38 +428,39 @@ PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
     }
     if (!PyObject_TypeCheck(args, &Matrix61cType))
     {
-        PyErr_SetString(PyExc_TypeError, "Argument must of type numc.Matrix!");
+        PyErr_SetString(PyExc_TypeError, "Argument must of type dumbpy.Matrix!");
         return NULL;
     }
     Matrix61c* another = (Matrix61c*)args;
     if (self->mat->cols != another->mat->rows)
     {
-        PyErr_SetString(PyExc_ValueError, "Invalid numc.Matrix dimensions!");
+        PyErr_SetString(PyExc_ValueError, "Invalid dumbpy.Matrix dimensions!");
         return NULL;
     }
     Matrix61c* result = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
     if (result == NULL)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     if (init_fill((PyObject*)result, self->mat->rows, another->mat->cols, 0) != 0)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     if (mul_matrix(result->mat, self->mat, another->mat) != 0)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Invalid numc.Matrix dimensions!");
+        PyErr_SetString(PyExc_RuntimeError, "Invalid dumbpy.Matrix dimensions!");
         return NULL;
     }
     return (PyObject*)result;
 }
 
 /*
- * Negates the given numc.Matrix.
+ * Negates the given dumbpy.Matrix.
  */
-PyObject *Matrix61c_neg(Matrix61c* self) {
+PyObject* Matrix61c_neg(Matrix61c* self)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL)
     {
@@ -396,12 +470,12 @@ PyObject *Matrix61c_neg(Matrix61c* self) {
     Matrix61c* result = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
     if (result == NULL)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     if (init_fill((PyObject*)result, self->mat->rows, self->mat->cols, 0) != 0)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     neg_matrix(result->mat, self->mat);
@@ -409,9 +483,10 @@ PyObject *Matrix61c_neg(Matrix61c* self) {
 }
 
 /*
- * Take the element-wise absolute value of this numc.Matrix.
+ * Take the element-wise absolute value of this dumbpy.Matrix.
  */
-PyObject *Matrix61c_abs(Matrix61c *self) {
+PyObject* Matrix61c_abs(Matrix61c* self)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL)
     {
@@ -421,12 +496,12 @@ PyObject *Matrix61c_abs(Matrix61c *self) {
     Matrix61c* result = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
     if (result == NULL)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     if (init_fill((PyObject*)result, self->mat->rows, self->mat->cols, 0) != 0)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     abs_matrix(result->mat, self->mat);
@@ -434,9 +509,10 @@ PyObject *Matrix61c_abs(Matrix61c *self) {
 }
 
 /*
- * Raise numc.Matrix (Matrix61c) to the `pow`th power. You can ignore the argument `optional`.
+ * Raise dumbpy.Matrix (Matrix61c) to the `pow`th power. You can ignore the argument `optional`.
  */
-PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
+PyObject* Matrix61c_pow(Matrix61c* self, PyObject* pow, PyObject* optional)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL)
     {
@@ -450,23 +526,23 @@ PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
     }
     if (self->mat->rows != self->mat->cols)
     {
-        PyErr_SetString(PyExc_ValueError, "Invalid numc.Matrix dimensions!");
+        PyErr_SetString(PyExc_ValueError, "Invalid dumbpy.Matrix dimensions!");
         return NULL;
     }
     Matrix61c* result = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
     if (result == NULL)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     if (init_fill((PyObject*)result, self->mat->rows, self->mat->cols, 0) != 0)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     if (pow_matrix(result->mat, self->mat, PyLong_AsLong(pow)) != 0)
     {
-        PyErr_SetString(PyExc_ValueError, "Invalid numc.Matrix dimensions!");
+        PyErr_SetString(PyExc_ValueError, "Invalid dumbpy.Matrix dimensions!");
         return NULL;
     }
     return (PyObject*)result;
@@ -493,10 +569,11 @@ PyNumberMethods Matrix61c_as_number = {
 /* INSTANCE METHODS */
 
 /*
- * Given a numc.Matrix self, parse `args` to (int) row, (int) col, and (double/int) val.
+ * Given a dumbpy.Matrix self, parse `args` to (int) row, (int) col, and (double/int) val.
  * Return None in Python (this is different from returning null).
  */
-PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
+PyObject* Matrix61c_set_value(Matrix61c* self, PyObject* args)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL)
     {
@@ -527,11 +604,12 @@ PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
 }
 
 /*
- * Given a numc.Matrix `self`, parse `args` to (int) row and (int) col.
+ * Given a dumbpy.Matrix `self`, parse `args` to (int) row and (int) col.
  * Return the value at the `row`th row and `col`th column, which is a Python
  * float/int.
  */
-PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
+PyObject* Matrix61c_get_value(Matrix61c* self, PyObject* args)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL)
     {
@@ -575,9 +653,10 @@ PyMethodDef Matrix61c_methods[] = {
 /* INDEXING */
 
 /*
- * Given a numc.Matrix `self`, index into it with `key`. Return the indexed result.
+ * Given a dumbpy.Matrix `self`, index into it with `key`. Return the indexed result.
  */
-PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
+PyObject* Matrix61c_subscript(Matrix61c* self, PyObject* key)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL)
     {
@@ -732,16 +811,17 @@ PyObject *Matrix61c_subscript(Matrix61c* self, PyObject* key) {
     result->shape = get_shape(row_length, col_length);
     if (allocate_matrix_ref(&(result->mat), self->mat, row_start, col_start, row_length, col_length) != 0)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
         return NULL;
     }
     return (PyObject*)result;
 }
 
 /*
- * Given a numc.Matrix `self`, index into it with `key`, and set the indexed result to `v`.
+ * Given a dumbpy.Matrix `self`, index into it with `key`, and set the indexed result to `v`.
  */
-int Matrix61c_set_subscript(Matrix61c* self, PyObject *key, PyObject *v) {
+int Matrix61c_set_subscript(Matrix61c* self, PyObject* key, PyObject* v)
+{
     /* TODO: YOUR CODE HERE */
     if (self == NULL || key == NULL || v == NULL)
     {
@@ -756,7 +836,7 @@ int Matrix61c_set_subscript(Matrix61c* self, PyObject *key, PyObject *v) {
         slice = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
         if (init_fill((PyObject*)slice, 1, 1, value) != 0)
         {
-            PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+            PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new dumbpy.Matrix!");
             return -1;
         }
     }
@@ -887,8 +967,8 @@ int Matrix61c_set_subscript(Matrix61c* self, PyObject *key, PyObject *v) {
 
 PyMappingMethods Matrix61c_mapping = {
     NULL,
-    (binaryfunc) Matrix61c_subscript,
-    (objobjargproc) Matrix61c_set_subscript,
+    (binaryfunc)Matrix61c_subscript,
+    (objobjargproc)Matrix61c_set_subscript,
 };
 
 /* INSTANCE ATTRIBUTES*/
@@ -902,14 +982,14 @@ PyMemberDef Matrix61c_members[] = {
 
 PyTypeObject Matrix61cType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "numc.Matrix",
+    .tp_name = "dumbpy.Matrix",
     .tp_basicsize = sizeof(Matrix61c),
     .tp_dealloc = (destructor)Matrix61c_dealloc,
     .tp_repr = (reprfunc)Matrix61c_repr,
     .tp_as_number = &Matrix61c_as_number,
     .tp_flags = Py_TPFLAGS_DEFAULT |
     Py_TPFLAGS_BASETYPE,
-    .tp_doc = "numc.Matrix objects",
+    .tp_doc = "dumbpy.Matrix objects",
     .tp_methods = Matrix61c_methods,
     .tp_members = Matrix61c_members,
     .tp_as_mapping = &Matrix61c_mapping,
@@ -918,28 +998,29 @@ PyTypeObject Matrix61cType = {
 };
 
 
-struct PyModuleDef numcmodule = {
+struct PyModuleDef dumbpymodule = {
     PyModuleDef_HEAD_INIT,
-    "numc",
-    "Numc matrix operations",
+    "dumbpy",
+    "dumbpy matrix operations",
     -1,
     Matrix61c_class_methods
 };
 
-/* Initialize the numc module */
-PyMODINIT_FUNC PyInit_numc(void) {
+/* Initialize the dumbpy module */
+PyMODINIT_FUNC PyInit_dumbpy(void)
+{
     PyObject* m;
 
     if (PyType_Ready(&Matrix61cType) < 0)
         return NULL;
 
-    m = PyModule_Create(&numcmodule);
+    m = PyModule_Create(&dumbpymodule);
     if (m == NULL)
         return NULL;
 
     Py_INCREF(&Matrix61cType);
-    PyModule_AddObject(m, "Matrix", (PyObject *)&Matrix61cType);
-    printf("CS61C Fall 2020 Project 4: numc imported!\n");
+    PyModule_AddObject(m, "Matrix", (PyObject*)&Matrix61cType);
+    printf("CS61C Fall 2020 Project 4: dumbpy imported!\n");
     fflush(stdout);
     return m;
 }
