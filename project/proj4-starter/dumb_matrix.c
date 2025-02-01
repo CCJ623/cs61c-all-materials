@@ -58,7 +58,7 @@ void rand_matrix(matrix* result, unsigned int seed, double low, double high)
  * `parent` should be set to NULL to indicate that this matrix is not a slice.
  * You should return -1 if either `rows` or `cols` or both have invalid values, or if any
  * call to allocate memory in this function fails. If you don't set python error messages here upon
- * failure, then remember to set it in numc.c.
+ * failure, then remember to set it in dumbpy.c.
  * Return 0 upon success and non-zero upon failure.
  */
 int allocate_matrix(matrix** mat, int rows, int cols)
@@ -97,7 +97,7 @@ int allocate_matrix(matrix** mat, int rows, int cols)
  * Allocate space for a matrix struct pointed to by `mat` with `rows` rows and `cols` columns.
  * This is equivalent to setting the new matrix to be
  * from[row_offset:row_offset + rows, col_offset:col_offset + cols]
- * If you don't set python error messages here upon failure, then remember to set it in numc.c.
+ * If you don't set python error messages here upon failure, then remember to set it in dumbpy.c.
  * Return 0 upon success and non-zero upon failure.
  */
 int allocate_matrix_ref(matrix** mat, matrix* from, int row_offset, int col_offset,
@@ -134,7 +134,7 @@ int allocate_matrix_ref(matrix** mat, matrix* from, int row_offset, int col_offs
 }
 
 /*
- * This function will be called automatically by Python when a numc matrix loses all of its
+ * This function will be called automatically by Python when a dumbpy matrix loses all of its
  * reference pointers.
  * You need to make sure that you only free `mat->data` if no other existing matrices are also
  * referring this data array.
@@ -260,16 +260,15 @@ int mul_matrix(matrix* result, matrix* mat1, matrix* mat2)
     /* TODO: YOUR CODE HERE */
     if (mat1->cols != mat2->rows || result->rows != mat1->rows || result->cols != mat2->cols)
         return -1;
+    fill_matrix(result, 0);
     for (int row = 0; row != result->rows; ++row)
     {
         for (int col = 0; col != result->cols; ++col)
         {
-            int temp = 0;
             for (int i = 0; i != mat1->cols; ++i)
             {
-                temp += mat1->data[row][i] * mat2->data[i][col];
+                result->data[row][col] += mat1->data[row][i] * mat2->data[i][col];
             }
-            result->data[row][col] = temp;
         }
     }
     return 0;
@@ -337,7 +336,7 @@ int abs_matrix(matrix* result, matrix* mat)
     {
         for (int col = 0; col != mat->cols; ++col)
         {
-            result->data[row][col] = abs(mat->data[row][col]);
+            result->data[row][col] = fabs(mat->data[row][col]);
         }
     }
     return 0;

@@ -339,7 +339,28 @@ PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
         return NULL;
     }
     Matrix61c* another = (Matrix61c*)args;
-    return Matrix61c_add(self, Matrix61c_neg(another));
+    if (self->mat->rows != another->mat->rows || self->mat->cols != another->mat->cols)
+    {
+        PyErr_SetString(PyExc_ValueError, "Two numc.Matrix must have same dimensions!");
+        return NULL;
+    }
+    Matrix61c* result = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
+    if (result == NULL)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        return NULL;
+    }
+    if (init_fill((PyObject*)result, self->mat->rows, self->mat->cols, 0) != 0)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate new numc.Matrix!");
+        return NULL;
+    }
+    if (sub_matrix(result->mat, self->mat, another->mat) != 0)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Two numc.Matrix must have same dimensions!");
+        return NULL;
+    }
+    return (PyObject*)result;
 }
 
 /*
@@ -478,15 +499,16 @@ PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
  */
 PyNumberMethods Matrix61c_as_number = {
     /* TODO: YOUR CODE HERE */
-    Matrix61c_add,
-    Matrix61c_sub,
-    Matrix61c_multiply,
+    (binaryfunc)Matrix61c_add,
+    (binaryfunc)Matrix61c_sub,
+    (binaryfunc)Matrix61c_multiply,
     NULL,
     NULL,
-    Matrix61c_pow,
-    Matrix61c_neg,
+    (ternaryfunc)Matrix61c_pow,
+    (unaryfunc)Matrix61c_neg,
     NULL,
-    Matrix61c_abs
+    (unaryfunc)Matrix61c_abs,
+    NULL
 };
 
 
@@ -752,7 +774,7 @@ int Matrix61c_set_subscript(Matrix61c* self, PyObject *key, PyObject *v) {
     Matrix61c* slice = (Matrix61c*)Matrix61c_subscript(self, key);
     if (PyFloat_Check((PyObject*)slice))
     {
-        double value = PyFloat_AsDouble(slice);
+        double value = PyFloat_AsDouble((PyObject*)slice);
         slice = (Matrix61c*)Matrix61c_new(&Matrix61cType, NULL, NULL);
         if (init_fill((PyObject*)slice, 1, 1, value) != 0)
         {
